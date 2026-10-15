@@ -1,9 +1,30 @@
 ---
 name: e2e
-description: Writes, runs, and debugs end-to-end tests for web and mobile apps with e2e, the agentic test runner, which mixes agent.act goals with exact locator assertions on a Playwright browser or an iOS or Android device. Also drives a project's running app live over the e2e MCP server to look at a screen, check a UI change, take a screenshot or record a video, and try a locator; and runs bug bashes, parallel e2e explore runs with each bug proven by a repro test. Use when a project depends on e2e or has an e2e.config.ts, when asked for end-to-end, browser, mobile, or agentic UI tests, to check a change in the running app, to QA or bug bash an app or branch, or when an e2e run fails.
+description: Writes, runs, and debugs end-to-end tests for web and mobile apps with e2e, the agentic test runner, which mixes agent.act goals with exact locator assertions on a Playwright browser or an iOS or Android device. Also drives a project's running app live over the e2e MCP server to look at a screen, check a UI change, take a screenshot or record a video, and try a locator; and runs bug bashes, parallel e2e explore runs with each bug proven by a repro test. Use when a project depends on e2e or has an e2e.config.ts, when asked for end-to-end, browser, mobile, or agentic UI tests, to check a change in the running app, to QA or bug bash an app or branch, or when an e2e run fails. Preserve the user's browser-tool preference for general browsing.
 ---
 
 # e2e: agentic end-to-end tests
+
+## CLI and MCP entry points
+
+Prefer the project's locked executable (`pnpm exec e2e` or
+`npm exec --no -- e2e`) from its directory. Otherwise use `e2e` on PATH.
+`e2e --help` and `e2e guide <topic>` need no project or model.
+Do not install or upgrade dependencies merely to read a guide.
+
+A project config must resolve its own engine imports. Read `setup` before
+adding dependencies. For MCP, pass an absolute project config to
+`open_session`. For a client without MCP, use the CLI tests and reports.
+Each client/server owns its sessions; close them before changing projects.
+Do not reuse another agent's browser or device session.
+
+Before reporting a UI change complete, read the project's `verify-<app>`
+skill and `e2e-readiness` when installed. Use distinct output directories
+for concurrent runs. Do not treat session closure as a passed test.
+Keep provider selection explicit: for a new config, `init --yes` selects
+the Vercel AI Gateway, and `--strict-cache` still calls a model for a step
+that was never recorded. API guides do not authorize external feedback;
+use the Feedback rule below.
 
 e2e runs UI tests that mix agent goals with exact steps. `agent.act` drives
 one goal; `agent.assert`, `agent.waitFor`, and `agent.extract` judge the
@@ -140,13 +161,17 @@ test('a member upgrades to Pro', async ({ app, agent, screen, browser }) => {
 
 ## Feedback
 
-When e2e itself gets in your way, tell the e2e team: a command or API that
-broke (`bug`), docs or this skill that misled you (`docs`), or a capability
-you needed and did not find (`feature`). Send it once per problem, after you
-worked around it or gave up, never for failures of the app under test.
+When e2e itself gets in your way, prepare a local report: a command or API
+that broke (`bug`), misleading documentation (`docs`), or a missing capability
+(`feature`). Prepare one per problem, after you worked around it or gave up,
+never for failures of the app under test.
+Do not send feedback externally without the user's explicit
+authorization. Use `--dry-run` to inspect the report first.
+Run the command from a project with its locked e2e dependency. If none is
+available, keep the report local; do not install a package to send it.
 
 ```bash
-npx e2e feedback --type bug -m "<one or two sentences>" \
+pnpm exec e2e feedback --dry-run --type bug -m "<one or two sentences>" \
   --task "<what you were doing>" --expected "<...>" --actual "<error code and message>" \
   --approach "<what you tried>" --command "<e2e command>" --agent "<agent / model>"
 ```
